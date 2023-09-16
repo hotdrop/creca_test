@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_credit_card/credit_card_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -12,31 +11,32 @@ class PaymentController extends _$PaymentController {
   @override
   Future<void> build() async {
     final registeredCreditCard = await ref.read(paymentRepositoryProvider).findCreditCardInfo();
-    if (registeredCreditCard != null) {
-      final newUiState = _UiState.create(registeredCreditCard);
-      ref.read(_uiStateProvider.notifier).state = newUiState;
+    ref.read(_uiStateProvider.notifier).state = _UiState.create(registeredCreditCard);
+  }
+
+  void input(CreditCardModel? inputCardInfo) {
+    if (inputCardInfo == null) {
+      return;
     }
-  }
 
-  void changeVisibleInputArea() {
-    final isVisible = ref.read(_uiStateProvider).visibleCardInputArea;
-    final newUiState = ref.read(_uiStateProvider).copyWith(visibleCardInputArea: !isVisible);
-    ref.read(_uiStateProvider.notifier).state = newUiState;
-  }
-
-  void input(CreditCardModel inputCardInfo) {
     final newCardInfo = CreditCard(
       cardNumber: inputCardInfo.cardNumber,
       expiryDate: inputCardInfo.expiryDate,
       cardHolderName: inputCardInfo.cardHolderName,
       cvvCode: inputCardInfo.cvvCode,
     );
+
     final newUiState = ref.read(_uiStateProvider).copyWith(inputCreditCard: newCardInfo);
     ref.read(_uiStateProvider.notifier).state = newUiState;
   }
 
   void isSaveInputCard(bool isSave) {
     final newUiState = ref.read(_uiStateProvider).copyWith(isSaveCardInfo: isSave);
+    ref.read(_uiStateProvider.notifier).state = newUiState;
+  }
+
+  void setSampleCard(CreditCard selectCard) {
+    final newUiState = ref.read(_uiStateProvider).copyWith(inputCreditCard: selectCard);
     ref.read(_uiStateProvider.notifier).state = newUiState;
   }
 
@@ -61,7 +61,6 @@ class _UiState {
     required this.inputCreditCard,
     required this.isRegisteredCard,
     required this.isSaveCardInfo,
-    required this.visibleCardInputArea,
   });
 
   factory _UiState.create(CreditCard? cardInfo) {
@@ -70,7 +69,6 @@ class _UiState {
       inputCreditCard: cardInfo ?? CreditCard.init(),
       isRegisteredCard: cardInfo != null ? true : false,
       isSaveCardInfo: cardInfo != null ? true : false,
-      visibleCardInputArea: cardInfo != null ? false : true,
     );
   }
 
@@ -78,7 +76,6 @@ class _UiState {
   final CreditCard inputCreditCard;
   final bool isRegisteredCard;
   final bool isSaveCardInfo;
-  final bool visibleCardInputArea;
 
   _UiState copyWith({
     CreditCard? inputCreditCard,
@@ -90,13 +87,9 @@ class _UiState {
       inputCreditCard: inputCreditCard ?? this.inputCreditCard,
       isRegisteredCard: isRegisteredCard,
       isSaveCardInfo: isSaveCardInfo ?? this.isSaveCardInfo,
-      visibleCardInputArea: visibleCardInputArea ?? this.visibleCardInputArea,
     );
   }
 }
-
-// クレカ情報入力ViewのKey
-final creditCardInputValidateKey = StateProvider<GlobalKey<FormState>>((_) => GlobalKey<FormState>());
 
 final inputCreditCardProvider = Provider<CreditCard>((ref) {
   return ref.watch(_uiStateProvider.select((value) => value.inputCreditCard));
@@ -110,12 +103,20 @@ final isSaveCreditCardProvider = Provider<bool>((ref) {
   return ref.watch(_uiStateProvider.select((value) => value.isSaveCardInfo));
 });
 
-final visibleInputAreaProvider = Provider<bool>((ref) {
-  return ref.watch(_uiStateProvider.select((value) => value.visibleCardInputArea));
+final defaultCardInfoListProvider = Provider<List<(String, CreditCard)>>((_) {
+  return [
+    ('サンプルカード（正常）', const CreditCard(cardNumber: '1111 2222 3333 4444', expiryDate: '12/25', cardHolderName: 'TEST HOGE', cvvCode: '123')),
+    ('サンプルカード（エラー）', const CreditCard(cardNumber: '9999 8888 7777 6666', expiryDate: '04/25', cardHolderName: 'ERROR HOGE', cvvCode: '999')),
+    ('サンプルカード（警告）', const CreditCard(cardNumber: '1111 2222 3333 4444', expiryDate: '01/25', cardHolderName: 'WARNING HOGE', cvvCode: '455')),
+  ];
 });
 
 final enablePaymentButtonProvider = Provider<bool>((ref) {
+  final isRegister = ref.watch(isRegisteredCardProvider);
   final inputCard = ref.watch(inputCreditCardProvider);
+  if (isRegister && inputCard.isEmpty()) {
+    return true;
+  }
 
   if (inputCard.cardNumber.length != 19) {
     return false;

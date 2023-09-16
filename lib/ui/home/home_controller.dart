@@ -22,4 +22,4 @@ final isSelectAccountProvider = Provider.family<bool, Account>((ref, account) {
   return account.id == ref.watch(accountProvider).id;
 });
 
-final homeAmountsProvider = Provider<List<int>>((_) => [1000, 5000, 10000]);
+final homeAmountsProvider = Provider<List<int>>((_) => [1000, 5000, 8000, 9999]);

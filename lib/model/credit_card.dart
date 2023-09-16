@@ -26,4 +26,8 @@ class CreditCard {
   String getExpiryMonth() {
     return expiryDate.substring(0, 2);
   }
+
+  bool isEmpty() {
+    return cardNumber.isEmpty && expiryDate.isEmpty && cardHolderName.isEmpty && cvvCode.isEmpty;
+  }
 }

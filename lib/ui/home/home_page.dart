@@ -100,19 +100,11 @@ class _CardAmount extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: InkWell(
-        onTap: () {
-          PaymentPage.start(context, amount);
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Text('$amount 円'),
-        ),
+    return ElevatedButton(
+      onPressed: () => PaymentPage.start(context, amount),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Text('$amount 円', style: const TextStyle(fontSize: 16)),
       ),
     );
   }

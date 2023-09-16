@@ -1,3 +1,5 @@
+import 'package:creca_test/model/credit_card.dart';
+import 'package:creca_test/ui/payment/credit_card_input_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_credit_card/flutter_credit_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -57,36 +59,21 @@ class _ViewBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        children: [
-          _ViewPaymentAmount(amount),
-          const _ViewCreditCard(),
-          const _ViewRegisterCreditCardLabel(),
-          const SizedBox(height: 8),
-          const _ViewCreditCardInput(),
-          _ViewButton(amount),
-          const SizedBox(height: 16),
-        ],
-      ),
-    );
-  }
-}
-
-class _ViewPaymentAmount extends StatelessWidget {
-  const _ViewPaymentAmount(this.amount);
-
-  final int amount;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Text('支払い金額: $amount 円'),
+      child: Expanded(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const Text('[支払い金額]'),
+              Text('$amount 円', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              const Divider(),
+              const _ViewCreditCard(),
+              const Divider(),
+              const _ViewCreditCardInput(),
+              const _InputCardInfoSaveSwitch(),
+              _PaymentButton(amount),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -98,32 +85,24 @@ class _ViewCreditCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cardInfo = ref.watch(inputCreditCardProvider);
-
-    return CreditCardWidget(
-      cardNumber: cardInfo.cardNumber,
-      expiryDate: cardInfo.expiryDate,
-      cardHolderName: cardInfo.cardHolderName,
-      cvvCode: cardInfo.cvvCode,
-      showBackView: false,
-      isHolderNameVisible: true,
-      labelValidThru: '有効\n期限',
-      labelCardHolder: 'NAME',
-      onCreditCardWidgetChange: (creditCardBrand) {},
-    );
-  }
-}
-
-class _ViewRegisterCreditCardLabel extends ConsumerWidget {
-  const _ViewRegisterCreditCardLabel();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
     final isRegisteredCard = ref.watch(isRegisteredCardProvider);
-    if (isRegisteredCard) {
-      return const Text('このカード情報は登録されています', style: TextStyle(color: Colors.blue));
-    } else {
-      return const SizedBox();
-    }
+
+    return Column(
+      children: [
+        CreditCardWidget(
+          cardNumber: cardInfo.cardNumber,
+          expiryDate: cardInfo.expiryDate,
+          cardHolderName: cardInfo.cardHolderName,
+          cvvCode: cardInfo.cvvCode,
+          showBackView: false,
+          isHolderNameVisible: true,
+          labelValidThru: '有効\n期限',
+          labelCardHolder: 'NAME',
+          onCreditCardWidgetChange: (creditCardBrand) {},
+        ),
+        if (isRegisteredCard) const Text('カード情報登録済', style: TextStyle(color: Colors.blue)),
+      ],
+    );
   }
 }
 
@@ -132,93 +111,72 @@ class _ViewCreditCardInput extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final visibleArea = ref.watch(visibleInputAreaProvider);
-    final rowLabel = visibleArea ? 'カード情報入力領域を非表示にする' : 'カード情報入力エリアを表示する';
-
-    return Expanded(
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            InkWell(
-              onTap: () {
-                ref.read(paymentControllerProvider.notifier).changeVisibleInputArea();
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(rowLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  Icon(visibleArea ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down),
-                ],
-              ),
-            ),
-            if (visibleArea)
-              const Column(
-                children: [
-                  _ViewCreditCardForm(),
-                  _ViewCardRegisterSwitch(),
-                  SizedBox(height: 16),
-                ],
-              ),
-          ],
-        ),
-      ),
+    final sampleCardList = ref.watch(defaultCardInfoListProvider);
+    return Column(
+      children: [
+        const SizedBox(height: 8),
+        const _InputCreditCardButton(),
+        const SizedBox(height: 8),
+        const Text('サンプルカードから選ぶ'),
+        ...sampleCardList.map((e) => _RowSampleCard(name: e.$1, creditCard: e.$2)).toList(),
+      ],
     );
   }
 }
 
-class _ViewCreditCardForm extends ConsumerWidget {
-  const _ViewCreditCardForm();
+class _InputCreditCardButton extends ConsumerWidget {
+  const _InputCreditCardButton();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cardInfo = ref.watch(inputCreditCardProvider);
+    return ElevatedButton(
+      onPressed: () => _showCreditCardInputDialog(context, ref),
+      child: const Text('カード情報を手入力する'),
+    );
+  }
 
-    return CreditCardForm(
-      formKey: ref.watch(creditCardInputValidateKey),
-      cardNumber: cardInfo.cardNumber,
-      expiryDate: cardInfo.expiryDate,
-      cardHolderName: cardInfo.cardHolderName,
-      cvvCode: cardInfo.cvvCode,
-      onCreditCardModelChange: (CreditCardModel? inputCardInfo) {
-        if (inputCardInfo == null) {
-          return;
-        }
+  void _showCreditCardInputDialog(BuildContext context, WidgetRef ref) {
+    CreditCardInputDialog(
+      creditCard: ref.read(inputCreditCardProvider),
+      onChange: (CreditCardModel? inputCardInfo) {
         ref.read(paymentControllerProvider.notifier).input(inputCardInfo);
       },
-      themeColor: Colors.lightBlue,
-      cardNumberDecoration: const InputDecoration(
-        border: OutlineInputBorder(),
-        labelText: 'カード番号',
-        hintText: 'XXXX XXXX XXXX XXXX',
+    ).show(context);
+  }
+}
+
+class _RowSampleCard extends ConsumerWidget {
+  const _RowSampleCard({required this.name, required this.creditCard});
+
+  final String name;
+  final CreditCard creditCard;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
       ),
-      expiryDateDecoration: const InputDecoration(
-        border: OutlineInputBorder(),
-        labelText: '有効期限',
-        hintText: 'XX/XX',
-      ),
-      cvvCodeDecoration: const InputDecoration(
-        border: OutlineInputBorder(),
-        labelText: 'セキュリティコード',
-        hintText: 'XXX',
-      ),
-      cardHolderDecoration: const InputDecoration(
-        border: OutlineInputBorder(),
-        labelText: 'Name',
+      child: ListTile(
+        leading: const Icon(Icons.credit_card),
+        title: Text(name),
+        subtitle: Text(creditCard.cardHolderName),
+        onTap: () => ref.read(paymentControllerProvider.notifier).setSampleCard(creditCard),
       ),
     );
   }
 }
 
-class _ViewCardRegisterSwitch extends ConsumerWidget {
-  const _ViewCardRegisterSwitch();
+class _InputCardInfoSaveSwitch extends ConsumerWidget {
+  const _InputCardInfoSaveSwitch();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text('カード情報を保存する'),
-        const SizedBox(width: 16),
+        const Text('このカード情報を登録する'),
         Switch(
           value: ref.watch(isSaveCreditCardProvider),
           onChanged: (value) {
@@ -230,8 +188,8 @@ class _ViewCardRegisterSwitch extends ConsumerWidget {
   }
 }
 
-class _ViewButton extends ConsumerWidget {
-  const _ViewButton(this.amount);
+class _PaymentButton extends ConsumerWidget {
+  const _PaymentButton(this.amount);
 
   final int amount;
 
@@ -239,20 +197,23 @@ class _ViewButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final enable = ref.watch(enablePaymentButtonProvider);
 
-    return ElevatedButton(
-      onPressed: enable
-          ? () {
-              AppDialog.okAndCancel(
-                message: 'テスト支払いします。よろしいですか？',
-                onOk: () async => await _payment(context, ref),
-              ).show(context);
-            }
-          : null,
-      child: const Padding(
-        padding: EdgeInsets.all(16),
-        child: Text('この内容で支払いする'),
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: ElevatedButton(
+        onPressed: enable ? () => _showConfirmDialog(context, ref) : null,
+        child: const Padding(
+          padding: EdgeInsets.all(16),
+          child: Text('支払いを実行する'),
+        ),
       ),
     );
+  }
+
+  void _showConfirmDialog(BuildContext context, WidgetRef ref) {
+    AppDialog.okAndCancel(
+      message: 'テスト支払いします。よろしいですか？',
+      onOk: () async => await _payment(context, ref),
+    ).show(context);
   }
 
   Future<void> _payment(BuildContext context, WidgetRef ref) async {
