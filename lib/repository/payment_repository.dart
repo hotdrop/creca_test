@@ -1,7 +1,6 @@
 import 'package:creca_test/common/logger.dart';
 import 'package:creca_test/model/account.dart';
 import 'package:creca_test/model/credit_card.dart';
-import 'package:creca_test/model/item.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final paymentRepositoryProvider = Provider((ref) => PaymentRepository(ref));
@@ -11,15 +10,8 @@ class PaymentRepository {
 
   final Ref ref;
 
-  List<Item> findItems() {
-    return const [
-      Item(name: '商品その1', price: 1000, imagePath: 'assets/images/01_item.png'),
-      Item(name: '商品その2', price: 5000, imagePath: 'assets/images/02_item.png'),
-      Item(name: '商品その3', price: 8000, imagePath: 'assets/images/03_item.png'),
-    ];
-  }
-
   Future<CreditCard?> findCreditCardInfo() async {
+    // TODO カード情報が登録されているか取得する
     await Future<void>.delayed(const Duration(milliseconds: 500));
 
     final account = ref.read(accountProvider);
@@ -40,9 +32,8 @@ class PaymentRepository {
     required bool isRegister,
     required bool isRemove,
   }) async {
-    await Future<void>.delayed(const Duration(seconds: 1));
-
     // TODO カード決済する
+    await Future<void>.delayed(const Duration(seconds: 1));
 
     if (isRegister) {
       AppLogger.d('カード情報を登録します。');

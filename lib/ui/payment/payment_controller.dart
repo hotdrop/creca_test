@@ -1,15 +1,14 @@
-import 'package:creca_test/model/credit_card.dart';
-import 'package:creca_test/model/item.dart';
-import 'package:creca_test/repository/payment_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_credit_card/credit_card_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:creca_test/model/credit_card.dart';
+import 'package:creca_test/repository/payment_repository.dart';
 
-part 'credit_controller.g.dart';
+part 'payment_controller.g.dart';
 
 @riverpod
-class CreditController extends _$CreditController {
+class PaymentController extends _$PaymentController {
   @override
   Future<void> build() async {
     final registeredCreditCard = await ref.read(paymentRepositoryProvider).findCreditCardInfo();
@@ -41,13 +40,13 @@ class CreditController extends _$CreditController {
     ref.read(_uiStateProvider.notifier).state = newUiState;
   }
 
-  Future<void> payment(Item item) async {
+  Future<void> payment(int amount) async {
     final uiState = ref.read(_uiStateProvider);
     //  前回登録していない→今回登録する=カード情報を登録する
     //  前回登録している→今回登録しない=カード情報を消す
     await ref.read(paymentRepositoryProvider).payment(
           creditCard: uiState.inputCreditCard,
-          amount: item.price,
+          amount: amount,
           isRegister: !uiState.isRegisteredCard && uiState.isSaveCardInfo,
           isRemove: uiState.isRegisteredCard && !uiState.isSaveCardInfo,
         );

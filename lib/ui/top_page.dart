@@ -1,13 +1,13 @@
-import 'package:creca_test/ui/account/account_page.dart';
-import 'package:creca_test/ui/item/item_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:creca_test/ui/history/history_page.dart';
+import 'package:creca_test/ui/home/home_page.dart';
 
 class TopPage extends ConsumerWidget {
   const TopPage({super.key});
 
-  static const int itemsIndex = 0;
-  static const int accountIndex = 1;
+  static const int homeIndex = 0;
+  static const int historyIndex = 1;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -33,13 +33,13 @@ class TopPage extends ConsumerWidget {
 
   List<Destination> get destinations => <Destination>[
         const Destination('ホーム', Icon(Icons.home)),
-        const Destination('アカウント', Icon(Icons.account_circle)),
+        const Destination('履歴', Icon(Icons.history)),
       ];
 
   Widget _menuView(int index) {
     return switch (index) {
-      itemsIndex => const ItemPage(),
-      accountIndex => const AccountPage(),
+      homeIndex => const HomePage(),
+      historyIndex => const HistoryPage(),
       _ => throw Exception(['不正なIndexです index=$index']),
     };
   }
@@ -123,4 +123,4 @@ class Destination {
   final Widget icon;
 }
 
-final _selectMenuIndexSProvider = StateProvider((ref) => TopPage.itemsIndex);
+final _selectMenuIndexSProvider = StateProvider((ref) => TopPage.homeIndex);

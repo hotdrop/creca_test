@@ -1,22 +1,21 @@
-import 'package:creca_test/model/item.dart';
-import 'package:creca_test/ui/widgets/app_dialog.dart';
-import 'package:creca_test/ui/payment/credit_controller.dart';
-import 'package:creca_test/ui/widgets/app_progress_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_credit_card/flutter_credit_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:creca_test/ui/widgets/app_dialog.dart';
+import 'package:creca_test/ui/payment/payment_controller.dart';
+import 'package:creca_test/ui/widgets/app_progress_dialog.dart';
 
-class CardInputPage extends ConsumerWidget {
-  const CardInputPage._(this.item);
+class PaymentPage extends ConsumerWidget {
+  const PaymentPage._(this.amount);
 
-  static void start(BuildContext context, Item selectItem) {
+  static void start(BuildContext context, int amount) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => CardInputPage._(selectItem)),
+      MaterialPageRoute(builder: (_) => PaymentPage._(amount)),
     );
   }
 
-  final Item item;
+  final int amount;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,8 +23,8 @@ class CardInputPage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('カード情報入力'),
       ),
-      body: ref.watch(creditControllerProvider).when(
-            data: (_) => _ViewBody(item),
+      body: ref.watch(paymentControllerProvider).when(
+            data: (_) => _ViewBody(amount),
             error: (err, _) => _ViewError('$err'),
             loading: () => const Center(child: CircularProgressIndicator()),
           ),
@@ -50,9 +49,9 @@ class _ViewError extends StatelessWidget {
 }
 
 class _ViewBody extends StatelessWidget {
-  const _ViewBody(this.item);
+  const _ViewBody(this.amount);
 
-  final Item item;
+  final int amount;
 
   @override
   Widget build(BuildContext context) {
@@ -60,12 +59,12 @@ class _ViewBody extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
-          _ViewItem(item),
+          _ViewPaymentAmount(amount),
           const _ViewCreditCard(),
           const _ViewRegisterCreditCardLabel(),
           const SizedBox(height: 8),
           const _ViewCreditCardInput(),
-          _ViewButton(item),
+          _ViewButton(amount),
           const SizedBox(height: 16),
         ],
       ),
@@ -73,24 +72,21 @@ class _ViewBody extends StatelessWidget {
   }
 }
 
-class _ViewItem extends StatelessWidget {
-  const _ViewItem(this.item);
+class _ViewPaymentAmount extends StatelessWidget {
+  const _ViewPaymentAmount(this.amount);
 
-  final Item item;
+  final int amount;
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 4,
+      elevation: 1,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      child: ListTile(
-        leading: CircleAvatar(
-          child: Image.asset(item.imagePath, width: 50, height: 50),
-        ),
-        title: Text(item.name),
-        subtitle: Text('${item.price} 円'),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Text('支払い金額: $amount 円'),
       ),
     );
   }
@@ -145,7 +141,7 @@ class _ViewCreditCardInput extends ConsumerWidget {
           children: [
             InkWell(
               onTap: () {
-                ref.read(creditControllerProvider.notifier).changeVisibleInputArea();
+                ref.read(paymentControllerProvider.notifier).changeVisibleInputArea();
               },
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -187,7 +183,7 @@ class _ViewCreditCardForm extends ConsumerWidget {
         if (inputCardInfo == null) {
           return;
         }
-        ref.read(creditControllerProvider.notifier).input(inputCardInfo);
+        ref.read(paymentControllerProvider.notifier).input(inputCardInfo);
       },
       themeColor: Colors.lightBlue,
       cardNumberDecoration: const InputDecoration(
@@ -226,7 +222,7 @@ class _ViewCardRegisterSwitch extends ConsumerWidget {
         Switch(
           value: ref.watch(isSaveCreditCardProvider),
           onChanged: (value) {
-            ref.read(creditControllerProvider.notifier).isSaveInputCard(value);
+            ref.read(paymentControllerProvider.notifier).isSaveInputCard(value);
           },
         )
       ],
@@ -235,9 +231,9 @@ class _ViewCardRegisterSwitch extends ConsumerWidget {
 }
 
 class _ViewButton extends ConsumerWidget {
-  const _ViewButton(this.item);
+  const _ViewButton(this.amount);
 
-  final Item item;
+  final int amount;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -263,7 +259,7 @@ class _ViewButton extends ConsumerWidget {
     const progressDialog = AppProgressDialog();
     progressDialog.show(
       context,
-      execute: () => ref.read(creditControllerProvider.notifier).payment(item),
+      execute: () => ref.read(paymentControllerProvider.notifier).payment(amount),
       onSuccess: (_) => AppDialog.ok(message: 'テスト実行が完了しました。', onOk: () => Navigator.pop(context)).show(context),
       onError: (err, st) => AppDialog.ok(message: '$err').show(context),
     );
