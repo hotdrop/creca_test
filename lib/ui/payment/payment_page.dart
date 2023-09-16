@@ -23,7 +23,7 @@ class PaymentPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('カード情報入力'),
+        title: const Text('クレカ情報入力'),
       ),
       body: ref.watch(paymentControllerProvider).when(
             data: (_) => _ViewBody(amount),
@@ -59,21 +59,17 @@ class _ViewBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Expanded(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              const Text('[支払い金額]'),
-              Text('$amount 円', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-              const Divider(),
-              const _ViewCreditCard(),
-              const Divider(),
-              const _ViewCreditCardInput(),
-              const _InputCardInfoSaveSwitch(),
-              _PaymentButton(amount),
-            ],
-          ),
-        ),
+      child: Column(
+        children: [
+          const Text('[支払い金額]'),
+          Text('$amount 円', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          const Divider(),
+          const _ViewCreditCard(),
+          const _ViewCreditCardInput(),
+          const Divider(),
+          const _InputCardInfoSaveSwitch(),
+          _PaymentButton(amount),
+        ],
       ),
     );
   }
@@ -100,7 +96,7 @@ class _ViewCreditCard extends ConsumerWidget {
           labelCardHolder: 'NAME',
           onCreditCardWidgetChange: (creditCardBrand) {},
         ),
-        if (isRegisteredCard) const Text('カード情報登録済', style: TextStyle(color: Colors.blue)),
+        if (isRegisteredCard) const Text('クレカ情報登録済', style: TextStyle(color: Colors.blue)),
       ],
     );
   }
@@ -112,14 +108,30 @@ class _ViewCreditCardInput extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sampleCardList = ref.watch(defaultCardInfoListProvider);
-    return Column(
-      children: [
-        const SizedBox(height: 8),
-        const _InputCreditCardButton(),
-        const SizedBox(height: 8),
-        const Text('サンプルカードから選ぶ'),
-        ...sampleCardList.map((e) => _RowSampleCard(name: e.$1, creditCard: e.$2)).toList(),
-      ],
+    return Expanded(
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(height: 8),
+            const _InputCreditCardButton(),
+            const SizedBox(height: 8),
+            ExpansionTile(
+              title: const Text('サンプルクレカ情報から選ぶ'),
+              collapsedShape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(4)),
+                side: BorderSide(width: 1, color: Colors.grey),
+              ),
+              expandedAlignment: Alignment.centerLeft,
+              expandedCrossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
+                  children: sampleCardList.map((e) => _RowSampleCard(name: e.$1, creditCard: e.$2)).toList(),
+                )
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -131,7 +143,7 @@ class _InputCreditCardButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return ElevatedButton(
       onPressed: () => _showCreditCardInputDialog(context, ref),
-      child: const Text('カード情報を手入力する'),
+      child: const Text('クレカ情報を手入力する'),
     );
   }
 
@@ -176,7 +188,7 @@ class _InputCardInfoSaveSwitch extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text('このカード情報を登録する'),
+        const Text('このクレカ情報を登録する'),
         Switch(
           value: ref.watch(isSaveCreditCardProvider),
           onChanged: (value) {
