@@ -22,6 +22,7 @@ class MyApp extends StatelessWidget {
       supportedLocales: const [Locale('ja', '')],
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        appBarTheme: const AppBarTheme(centerTitle: true),
         useMaterial3: true,
       ),
       home: const TopPage(),

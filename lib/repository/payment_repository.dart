@@ -1,8 +1,10 @@
 import 'package:creca_test/common/logger.dart';
 import 'package:creca_test/model/account.dart';
 import 'package:creca_test/model/credit_card.dart';
+import 'package:creca_test/model/history.dart';
 import 'package:creca_test/model/payment.dart';
 import 'package:creca_test/model/unique_id_generator.dart';
+import 'package:creca_test/repository/local/history_dao.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final paymentRepositoryProvider = Provider((ref) => PaymentRepository(ref));
@@ -32,6 +34,10 @@ class PaymentRepository {
     return ref.read(uniqueIdGeneratorProvider).generate();
   }
 
+  Future<List<History>> findHistories() async {
+    return await ref.read(historyDaoProvider).findAll();
+  }
+
   Future<(int, String)> payment(Payment payment) async {
     // TODO カード決済のAPIを実行する
     await Future<void>.delayed(const Duration(seconds: 1));
@@ -43,6 +49,8 @@ class PaymentRepository {
     } else if (payment.isRemoveCardInfo()) {
       AppLogger.d('カード情報を削除します。');
     }
+
+    await ref.read(historyDaoProvider).save(payment, 200, '成功しました');
 
     return (200, '成功しました');
   }
