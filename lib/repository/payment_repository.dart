@@ -21,24 +21,25 @@ class PaymentRepository {
         expiryDate: '12/25',
         cardHolderName: 'TEST TAROU',
         cvvCode: '123',
+        isRegistered: true,
       );
     }
     return null;
   }
 
-  Future<void> payment({
-    required CreditCard creditCard,
-    required int amount,
-    required bool isRegister,
-    required bool isRemove,
-  }) async {
+  Future<(int, String)> payment({required CreditCard creditCard, required int amount, required bool isSave}) async {
     // TODO カード決済する
     await Future<void>.delayed(const Duration(seconds: 1));
+
+    final isRegister = !creditCard.isRegistered && isSave;
+    final isRemove = creditCard.isRegistered && !isSave;
 
     if (isRegister) {
       AppLogger.d('カード情報を登録します。');
     } else if (isRemove) {
       AppLogger.d('カード情報を削除します。');
     }
+
+    return (200, '成功しました');
   }
 }

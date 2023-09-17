@@ -4,16 +4,18 @@ class CreditCard {
     required this.expiryDate,
     required this.cardHolderName,
     required this.cvvCode,
+    required this.isRegistered,
   });
 
   factory CreditCard.init() {
-    return const CreditCard(cardNumber: '', expiryDate: '', cardHolderName: '', cvvCode: '');
+    return const CreditCard(cardNumber: '', expiryDate: '', cardHolderName: '', cvvCode: '', isRegistered: false);
   }
 
   final String cardNumber;
   final String expiryDate;
   final String cardHolderName;
   final String cvvCode;
+  final bool isRegistered;
 
   String getCardNumberOnlyNum() {
     return cardNumber.replaceAll(' ', '');
@@ -29,5 +31,18 @@ class CreditCard {
 
   bool isEmpty() {
     return cardNumber.isEmpty && expiryDate.isEmpty && cardHolderName.isEmpty && cvvCode.isEmpty;
+  }
+
+  CreditCard copyWith({
+    bool? isRegistered,
+    bool? isRemoveRegisterCardInfo,
+  }) {
+    return CreditCard(
+      cardNumber: cardNumber,
+      expiryDate: expiryDate,
+      cardHolderName: cardHolderName,
+      cvvCode: cvvCode,
+      isRegistered: isRegistered ?? this.isRegistered,
+    );
   }
 }

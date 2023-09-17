@@ -1,11 +1,11 @@
 import 'package:creca_test/model/credit_card.dart';
 import 'package:creca_test/ui/payment/credit_card_input_dialog.dart';
+import 'package:creca_test/ui/payment/payment_complete_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_credit_card/flutter_credit_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:creca_test/ui/widgets/app_dialog.dart';
 import 'package:creca_test/ui/payment/payment_controller.dart';
-import 'package:creca_test/ui/widgets/app_progress_dialog.dart';
 
 class PaymentPage extends ConsumerWidget {
   const PaymentPage._(this.amount);
@@ -81,8 +81,6 @@ class _ViewCreditCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cardInfo = ref.watch(inputCreditCardProvider);
-    final isRegisteredCard = ref.watch(isRegisteredCardProvider);
-
     return Column(
       children: [
         CreditCardWidget(
@@ -96,7 +94,7 @@ class _ViewCreditCard extends ConsumerWidget {
           labelCardHolder: 'NAME',
           onCreditCardWidgetChange: (creditCardBrand) {},
         ),
-        if (isRegisteredCard) const Text('クレカ情報登録済', style: TextStyle(color: Colors.blue)),
+        if (cardInfo.isRegistered) const Text('クレカ情報登録済', style: TextStyle(color: Colors.blue)),
       ],
     );
   }
@@ -224,17 +222,14 @@ class _PaymentButton extends ConsumerWidget {
   void _showConfirmDialog(BuildContext context, WidgetRef ref) {
     AppDialog.okAndCancel(
       message: 'テスト支払いします。よろしいですか？',
-      onOk: () async => await _payment(context, ref),
+      onOk: () {
+        PaymentCompletePage.start(
+          context,
+          creditCard: ref.read(inputCreditCardProvider),
+          amount: amount,
+          isSave: ref.read(isSaveCreditCardProvider),
+        ).then((value) => Navigator.pop(context));
+      },
     ).show(context);
-  }
-
-  Future<void> _payment(BuildContext context, WidgetRef ref) async {
-    const progressDialog = AppProgressDialog();
-    progressDialog.show(
-      context,
-      execute: () => ref.read(paymentControllerProvider.notifier).payment(amount),
-      onSuccess: (_) => AppDialog.ok(message: 'テスト実行が完了しました。', onOk: () => Navigator.pop(context)).show(context),
-      onError: (err, st) => AppDialog.ok(message: '$err').show(context),
-    );
   }
 }

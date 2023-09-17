@@ -19,12 +19,10 @@ class AppDialog {
   final Function? _onOk;
   final Function? _onCancel;
 
-  void show(BuildContext context) {
-    showDialog<void>(
+  Future<void> show(BuildContext context) async {
+    await showDialog<void>(
       context: context,
-      builder: (_) {
-        return _createDialog(context);
-      },
+      builder: (_) => _createDialog(context),
     );
   }
 

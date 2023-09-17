@@ -14,21 +14,21 @@ dependencies:
     sdk: flutter
 
   # design
-  flutter_riverpod: ^2.3.0
-  riverpod_annotation: ^2.0.0
+  flutter_riverpod: ^2.4.0
+  riverpod_annotation: ^2.1.4
 
   # ui
   flutter_credit_card: ^3.0.7
   
   # other
-  intl: ^0.18.0
+  uuid: ^3.0.7
   logger: ^1.4.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  riverpod_generator: ^2.0.0
+  riverpod_generator: ^2.3.1
   flutter_lints: ^2.0.0
   build_runner:
 
