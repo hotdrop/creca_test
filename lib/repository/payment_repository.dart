@@ -33,7 +33,7 @@ class PaymentRepository {
   }
 
   Future<(int, String)> payment(Payment payment) async {
-    // TODO カード決済する
+    // TODO カード決済のAPIを実行する
     await Future<void>.delayed(const Duration(seconds: 1));
 
     //  前回登録していない→今回登録する=カード情報を登録する
