@@ -1,21 +1,19 @@
-import 'package:creca_test/model/credit_card.dart';
-import 'package:creca_test/ui/payment/payment_complete_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:creca_test/model/payment.dart';
+import 'package:creca_test/ui/payment/payment_complete_controller.dart';
 
 class PaymentCompletePage extends ConsumerWidget {
-  const PaymentCompletePage._(this.creditCard, this.amount, this.isSave);
+  const PaymentCompletePage._(this.payment);
 
-  static Future<void> start(BuildContext context, {required CreditCard creditCard, required int amount, required bool isSave}) async {
+  static Future<void> start(BuildContext context, Payment payment) async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => PaymentCompletePage._(creditCard, amount, isSave)),
+      MaterialPageRoute(builder: (_) => PaymentCompletePage._(payment)),
     );
   }
 
-  final CreditCard creditCard;
-  final int amount;
-  final bool isSave;
+  final Payment payment;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,9 +21,9 @@ class PaymentCompletePage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('支払い完了'),
       ),
-      body: ref.watch(paymentCompleteControllerProvider(creditCard, amount, isSave)).when(
-            data: (data) => _ViewBody(data.$1, data.$2),
-            error: (err, st) => _ViewBody(-1, '$err'),
+      body: ref.watch(paymentCompleteControllerProvider(payment)).when(
+            data: (data) => _ViewBody(payment, data.$1, data.$2),
+            error: (err, st) => _ViewBody(payment, -1, '$err'),
             loading: () => const Center(
               child: CircularProgressIndicator(),
             ),
@@ -35,8 +33,9 @@ class PaymentCompletePage extends ConsumerWidget {
 }
 
 class _ViewBody extends StatelessWidget {
-  const _ViewBody(this.resultCode, this.message);
+  const _ViewBody(this.payment, this.resultCode, this.message);
 
+  final Payment payment;
   final int resultCode;
   final String message;
 
@@ -46,13 +45,34 @@ class _ViewBody extends StatelessWidget {
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
+          _ViewPaymentInfo(payment),
+          const Divider(),
+          const SizedBox(height: 16),
           _ViewResultCode(resultCode),
           const SizedBox(height: 16),
           Text(message),
-          const SizedBox(height: 16),
+          const Spacer(),
           const _CloseButton(),
+          const SizedBox(height: 16),
         ],
       ),
+    );
+  }
+}
+
+class _ViewPaymentInfo extends ConsumerWidget {
+  const _ViewPaymentInfo(this.payment);
+
+  final Payment payment;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      children: [
+        const Text('[支払い金額]'),
+        Text('${payment.amount} 円', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        Text('処理ID: ${payment.transactionId}'),
+      ],
     );
   }
 }
@@ -64,7 +84,7 @@ class _ViewResultCode extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isSuccess = resultCode < 400 ? true : false;
+    final isSuccess = (resultCode < 400 && resultCode >= 200) ? true : false;
 
     final icons = isSuccess ? Icons.check_circle : Icons.error_rounded;
     final label = isSuccess ? '正常' : 'エラー';
@@ -73,9 +93,13 @@ class _ViewResultCode extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(icons, color: color),
+        Icon(
+          icons,
+          color: color,
+          size: 50,
+        ),
         const SizedBox(width: 16),
-        Text(label, style: TextStyle(color: color)),
+        Text(label, style: TextStyle(color: color, fontSize: 24)),
       ],
     );
   }

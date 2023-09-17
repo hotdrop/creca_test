@@ -1,11 +1,12 @@
-import 'package:creca_test/model/credit_card.dart';
-import 'package:creca_test/ui/payment/credit_card_input_dialog.dart';
-import 'package:creca_test/ui/payment/payment_complete_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_credit_card/flutter_credit_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:creca_test/ui/widgets/app_dialog.dart';
+import 'package:creca_test/model/credit_card.dart';
+import 'package:creca_test/model/payment.dart';
+import 'package:creca_test/ui/payment/credit_card_input_dialog.dart';
+import 'package:creca_test/ui/payment/payment_complete_page.dart';
 import 'package:creca_test/ui/payment/payment_controller.dart';
+import 'package:creca_test/ui/widgets/app_dialog.dart';
 
 class PaymentPage extends ConsumerWidget {
   const PaymentPage._(this.amount);
@@ -81,7 +82,7 @@ class _ViewPaymentInfo extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tranId = ref.watch(transactionIdProvider);
+    final tranId = ref.watch(paymentTransactionIdProvider);
     return Column(
       children: [
         const Text('[支払い金額]'),
@@ -97,7 +98,9 @@ class _ViewCreditCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cardInfo = ref.watch(inputCreditCardProvider);
+    final cardInfo = ref.watch(paymentInputCreditCardProvider);
+    final isRegistered = ref.watch(paymentIsRegisteredCreditCardProvider);
+
     return Column(
       children: [
         CreditCardWidget(
@@ -111,7 +114,7 @@ class _ViewCreditCard extends ConsumerWidget {
           labelCardHolder: 'NAME',
           onCreditCardWidgetChange: (creditCardBrand) {},
         ),
-        if (cardInfo.isRegistered) const Text('クレカ情報登録済', style: TextStyle(color: Colors.blue)),
+        if (isRegistered) const Text('クレカ情報登録済', style: TextStyle(color: Colors.blue)),
       ],
     );
   }
@@ -164,7 +167,7 @@ class _InputCreditCardButton extends ConsumerWidget {
 
   void _showCreditCardInputDialog(BuildContext context, WidgetRef ref) {
     CreditCardInputDialog(
-      creditCard: ref.read(inputCreditCardProvider),
+      creditCard: ref.read(paymentInputCreditCardProvider),
       onChange: (CreditCardModel? inputCardInfo) {
         ref.read(paymentControllerProvider.notifier).input(inputCardInfo);
       },
@@ -205,7 +208,7 @@ class _InputCardInfoSaveSwitch extends ConsumerWidget {
       children: [
         const Text('このクレカ情報を登録する'),
         Switch(
-          value: ref.watch(isSaveCreditCardProvider),
+          value: ref.watch(paymentIsSaveCreditCardProvider),
           onChanged: (value) {
             ref.read(paymentControllerProvider.notifier).isSaveInputCard(value);
           },
@@ -222,7 +225,7 @@ class _PaymentButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final enable = ref.watch(enablePaymentButtonProvider);
+    final enable = ref.watch(paymentEnableButtonProvider);
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -240,12 +243,14 @@ class _PaymentButton extends ConsumerWidget {
     AppDialog.okAndCancel(
       message: 'テスト支払いします。よろしいですか？',
       onOk: () {
-        PaymentCompletePage.start(
-          context,
-          creditCard: ref.read(inputCreditCardProvider),
+        final payment = Payment.create(
+          creditCard: ref.read(paymentInputCreditCardProvider),
+          transactionId: ref.read(paymentTransactionIdProvider),
           amount: amount,
-          isSave: ref.read(isSaveCreditCardProvider),
-        ).then((value) => Navigator.pop(context));
+          registeredCreditCard: ref.read(paymentIsRegisteredCreditCardProvider),
+          isSaveCardInfo: ref.read(paymentIsSaveCreditCardProvider),
+        );
+        PaymentCompletePage.start(context, payment).then((value) => Navigator.pop(context));
       },
     ).show(context);
   }

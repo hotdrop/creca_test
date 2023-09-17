@@ -4,18 +4,16 @@ class CreditCard {
     required this.expiryDate,
     required this.cardHolderName,
     required this.cvvCode,
-    required this.isRegistered,
   });
 
   factory CreditCard.init() {
-    return const CreditCard(cardNumber: '', expiryDate: '', cardHolderName: '', cvvCode: '', isRegistered: false);
+    return const CreditCard(cardNumber: '', expiryDate: '', cardHolderName: '', cvvCode: '');
   }
 
   final String cardNumber;
   final String expiryDate;
   final String cardHolderName;
   final String cvvCode;
-  final bool isRegistered;
 
   String getCardNumberOnlyNum() {
     return cardNumber.replaceAll(' ', '');
@@ -42,7 +40,6 @@ class CreditCard {
       expiryDate: expiryDate,
       cardHolderName: cardHolderName,
       cvvCode: cvvCode,
-      isRegistered: isRegistered ?? this.isRegistered,
     );
   }
 }
