@@ -61,8 +61,7 @@ class _ViewBody extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
-          const Text('[支払い金額]'),
-          Text('$amount 円', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          _ViewPaymentInfo(amount),
           const Divider(),
           const _ViewCreditCard(),
           const _ViewCreditCardInput(),
@@ -71,6 +70,24 @@ class _ViewBody extends StatelessWidget {
           _PaymentButton(amount),
         ],
       ),
+    );
+  }
+}
+
+class _ViewPaymentInfo extends ConsumerWidget {
+  const _ViewPaymentInfo(this.amount);
+
+  final int amount;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tranId = ref.watch(transactionIdProvider);
+    return Column(
+      children: [
+        const Text('[支払い金額]'),
+        Text('$amount 円', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        Text('処理ID: $tranId'),
+      ],
     );
   }
 }

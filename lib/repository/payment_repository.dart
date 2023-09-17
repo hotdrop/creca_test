@@ -1,6 +1,7 @@
 import 'package:creca_test/common/logger.dart';
 import 'package:creca_test/model/account.dart';
 import 'package:creca_test/model/credit_card.dart';
+import 'package:creca_test/model/unique_id_generator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final paymentRepositoryProvider = Provider((ref) => PaymentRepository(ref));
@@ -25,6 +26,10 @@ class PaymentRepository {
       );
     }
     return null;
+  }
+
+  String generateTransactionId() {
+    return ref.read(uniqueIdGeneratorProvider).generate();
   }
 
   Future<(int, String)> payment({required CreditCard creditCard, required int amount, required bool isSave}) async {

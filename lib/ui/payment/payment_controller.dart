@@ -11,7 +11,8 @@ class PaymentController extends _$PaymentController {
   @override
   Future<void> build() async {
     final registeredCreditCard = await ref.read(paymentRepositoryProvider).findCreditCardInfo();
-    ref.read(_uiStateProvider.notifier).state = _UiState.create(registeredCreditCard);
+    final transactionId = ref.read(paymentRepositoryProvider).generateTransactionId();
+    ref.read(_uiStateProvider.notifier).state = _UiState.create(transactionId, registeredCreditCard);
   }
 
   ///
@@ -45,21 +46,24 @@ class PaymentController extends _$PaymentController {
   }
 }
 
-final _uiStateProvider = StateProvider((_) => _UiState.create(null));
+final _uiStateProvider = StateProvider((_) => _UiState.create('', null));
 
 class _UiState {
   const _UiState._({
+    required this.transactionId,
     required this.creditCard,
     required this.isSaveCardInfo,
   });
 
-  factory _UiState.create(CreditCard? cardInfo) {
+  factory _UiState.create(String transactionId, CreditCard? cardInfo) {
     return _UiState._(
+      transactionId: transactionId,
       creditCard: cardInfo ?? CreditCard.init(),
       isSaveCardInfo: cardInfo != null ? true : false,
     );
   }
 
+  final String transactionId;
   final CreditCard creditCard;
   final bool isSaveCardInfo;
 
@@ -72,11 +76,16 @@ class _UiState {
     bool? isSaveCardInfo,
   }) {
     return _UiState._(
+      transactionId: transactionId,
       creditCard: creditCard ?? this.creditCard,
       isSaveCardInfo: isSaveCardInfo ?? this.isSaveCardInfo,
     );
   }
 }
+
+final transactionIdProvider = Provider<String>((ref) {
+  return ref.watch(_uiStateProvider.select((value) => value.transactionId));
+});
 
 final inputCreditCardProvider = Provider<CreditCard>((ref) {
   return ref.watch(_uiStateProvider.select((value) => value.creditCard));
