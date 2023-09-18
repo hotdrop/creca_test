@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:isar/isar.dart';
 
 part 'history.g.dart';
@@ -24,4 +25,7 @@ class History {
   bool isSuccess() {
     return resultCode >= 200 && resultCode < 400;
   }
+
+  @ignore
+  static final dateFormat = DateFormat('yyyy/MM/dd hh:mm');
 }

@@ -50,8 +50,15 @@ class PaymentRepository {
       AppLogger.d('カード情報を削除します。');
     }
 
-    await ref.read(historyDaoProvider).save(payment, 200, '成功しました');
-
-    return (200, '成功しました');
+    final account = ref.read(accountProvider);
+    if (account.id == '1000ab03') {
+      const message = 'Internal Server Error. AE001 このカード情報はXXのため利用できません。';
+      await ref.read(historyDaoProvider).save(payment, 500, message);
+      return (500, message);
+    } else {
+      const message = '成功しました';
+      await ref.read(historyDaoProvider).save(payment, 200, message);
+      return (200, message);
+    }
   }
 }

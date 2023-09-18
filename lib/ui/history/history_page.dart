@@ -39,7 +39,13 @@ class _ViewBody extends StatelessWidget {
           Text('履歴は ${histories.length} 件です。'),
           Expanded(
             child: ListView.builder(
-              itemBuilder: (context, index) => _HistoryRow(histories[index]),
+              itemBuilder: (context, index) {
+                if (histories[index].isSuccess()) {
+                  return _SuccessRow(histories[index]);
+                } else {
+                  return _ErrorRow(histories[index]);
+                }
+              },
               itemCount: histories.length,
             ),
           ),
@@ -49,25 +55,87 @@ class _ViewBody extends StatelessWidget {
   }
 }
 
-class _HistoryRow extends StatelessWidget {
-  const _HistoryRow(this.history);
+class _SuccessRow extends StatelessWidget {
+  const _SuccessRow(this.history);
 
   final History history;
 
   @override
   Widget build(BuildContext context) {
-    final icons = history.isSuccess() ? Icons.check_circle : Icons.error_rounded;
-    final color = history.isSuccess() ? Colors.green : Colors.red;
-
     return Card(
       elevation: 1,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      child: ListTile(
-        leading: Icon(icons, color: color),
-        title: Text(history.message, style: TextStyle(color: color)),
-        subtitle: Text(history.accountId),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.green),
+                const SizedBox(width: 8),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(history.message, style: const TextStyle(color: Colors.green)),
+                    Text('支払い金額: ${history.amount} 円'),
+                  ],
+                ),
+                const Spacer(),
+                Text(History.dateFormat.format(history.dateTime)),
+              ],
+            ),
+            const Divider(),
+            Text('アカウントID: ${history.accountId}'),
+            Text('処理ID: ${history.transactionId}'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ErrorRow extends StatelessWidget {
+  const _ErrorRow(this.history);
+
+  final History history;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.error_rounded, color: Colors.red),
+                const SizedBox(width: 8),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('エラー', style: TextStyle(color: Colors.red)),
+                    Text('支払い金額: ${history.amount} 円'),
+                  ],
+                ),
+                const Spacer(),
+                Text(History.dateFormat.format(history.dateTime)),
+              ],
+            ),
+            const Divider(),
+            Text('アカウントID: ${history.accountId}'),
+            Text('処理ID: ${history.transactionId}'),
+            Text('StatusCode: ${history.resultCode}', style: const TextStyle(color: Colors.red)),
+            Text(history.message, style: const TextStyle(color: Colors.red)),
+          ],
+        ),
       ),
     );
   }
