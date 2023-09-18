@@ -48,9 +48,7 @@ class _ViewBody extends StatelessWidget {
           _ViewPaymentInfo(payment),
           const Divider(),
           const SizedBox(height: 16),
-          _ViewResultCode(resultCode),
-          const SizedBox(height: 16),
-          Text(message),
+          _ViewResult(resultCode, message),
           const Spacer(),
           const _CloseButton(),
           const SizedBox(height: 16),
@@ -77,29 +75,26 @@ class _ViewPaymentInfo extends ConsumerWidget {
   }
 }
 
-class _ViewResultCode extends StatelessWidget {
-  const _ViewResultCode(this.resultCode);
+class _ViewResult extends StatelessWidget {
+  const _ViewResult(this.resultCode, this.message);
 
   final int resultCode;
+  final String message;
 
   @override
   Widget build(BuildContext context) {
     final isSuccess = (resultCode < 400 && resultCode >= 200) ? true : false;
 
     final icons = isSuccess ? Icons.check_circle : Icons.error_rounded;
-    final label = isSuccess ? '正常' : 'エラー';
     final color = isSuccess ? Colors.green : Colors.red;
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Column(
       children: [
-        Icon(
-          icons,
-          color: color,
-          size: 50,
-        ),
-        const SizedBox(width: 16),
-        Text(label, style: TextStyle(color: color, fontSize: 24)),
+        Icon(icons, color: color, size: 50),
+        const SizedBox(height: 8),
+        Text('HTTP Status Code: $resultCode', style: TextStyle(color: color, fontSize: 20)),
+        const SizedBox(height: 16),
+        Text(message, style: TextStyle(color: color)),
       ],
     );
   }
