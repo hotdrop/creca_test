@@ -7,7 +7,7 @@ part 'payment_complete_controller.g.dart';
 @riverpod
 class PaymentCompleteController extends _$PaymentCompleteController {
   @override
-  Future<(int, String)> build(Payment payment) async {
+  Future<String> build(Payment payment) async {
     return await ref.read(paymentRepositoryProvider).payment(payment);
   }
 }

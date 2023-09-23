@@ -1,9 +1,8 @@
-import 'package:creca_test/common/logger.dart';
-import 'package:creca_test/model/account.dart';
+import 'package:creca_test/model/app_exception.dart';
 import 'package:creca_test/model/history.dart';
 import 'package:creca_test/model/payment.dart';
-import 'package:creca_test/model/unique_id_generator.dart';
 import 'package:creca_test/repository/local/history_dao.dart';
+import 'package:creca_test/repository/remote/api/payment_api.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final paymentRepositoryProvider = Provider((ref) => PaymentRepository(ref));
@@ -17,27 +16,14 @@ class PaymentRepository {
     return await ref.read(historyDaoProvider).findAll();
   }
 
-  Future<(int, String)> payment(Payment payment) async {
-    // TODO カード決済のAPIを実行する
-    await Future<void>.delayed(const Duration(seconds: 1));
-
-    //  前回登録していない→今回登録する=カード情報を登録する
-    //  前回登録している→今回登録しない=カード情報を消す
-    if (payment.isRegisterCardInfo()) {
-      AppLogger.d('カード情報を登録します。');
-    } else if (payment.isRemoveCardInfo()) {
-      AppLogger.d('カード情報を削除します。');
-    }
-
-    final account = ref.read(accountProvider);
-    if (account.id == '1000ab03') {
-      const message = 'Internal Server Error. AE001 このカード情報はXXのため利用できません。';
-      await ref.read(historyDaoProvider).save(payment, 500, message);
-      return (500, message);
-    } else {
-      const message = '成功しました';
-      await ref.read(historyDaoProvider).save(payment, 200, message);
-      return (200, message);
+  Future<String> payment(Payment payment) async {
+    try {
+      final response = await ref.read(paymentApiProvider).payment(payment);
+      await ref.read(historyDaoProvider).save(payment, 200, '支払い成功');
+      return response.toString();
+    } on AppException catch (e) {
+      await ref.read(historyDaoProvider).save(payment, e.code, '${e.overview} [detail]:${e.detail}');
+      rethrow;
     }
   }
 }

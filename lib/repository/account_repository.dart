@@ -12,8 +12,8 @@ class AccountRepository {
 
   List<Account> findAccounts() {
     return const [
-      Account(id: '1000ab01', name: 'クレカ未登録太郎'),
-      Account(id: '1000ab02', name: 'クレカ登録二郎'),
+      Account(id: '1000ab01', name: 'クレカ一郎'),
+      Account(id: '1000ab02', name: 'クレカ二郎'),
       Account(id: '1000ab03', name: 'テスト三郎'),
     ];
   }
@@ -22,14 +22,20 @@ class AccountRepository {
     final account = ref.read(accountProvider);
     final response = await ref.read(accountApiProvider).inquiry(account);
 
-    if (account.id == '1000ab02') {
-      return const CreditCard(
-        cardNumber: '1111 2222 3333 4444',
-        expiryDate: '12/25',
-        cardHolderName: 'TEST TAROU',
-        cvvCode: '123',
+    if (response.id != null) {
+      return CreditCardRegistered.create(
+        cardId: response.id!,
+        cardNumberWithMask: response.cardNumber!,
+        expiryYear: response.expiryYear!,
+        expiryMonth: response.expiryMonth!,
+        cardHolderName: response.cardHolderName!,
       );
     }
     return null;
+  }
+
+  Future<void> deleteCreditCard(CreditCardRegistered creditCard) async {
+    final account = ref.read(accountProvider);
+    await ref.read(accountApiProvider).deleteCard(account, creditCard);
   }
 }

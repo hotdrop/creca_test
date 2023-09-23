@@ -8,7 +8,8 @@ class InquiryResponse with _$InquiryResponse {
   factory InquiryResponse({
     @JsonKey(name: 'cardId') String? id,
     @JsonKey(name: 'cardNumber') String? cardNumber,
-    @JsonKey(name: 'expiryDate') String? expiryDate,
+    @JsonKey(name: 'expiryYear') String? expiryYear,
+    @JsonKey(name: 'expiryMonth') String? expiryMonth,
     @JsonKey(name: 'cardHolderName') String? cardHolderName,
   }) = _InquiryResponse;
 

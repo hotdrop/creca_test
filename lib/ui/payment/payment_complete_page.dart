@@ -1,3 +1,4 @@
+import 'package:creca_test/model/app_exception.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:creca_test/model/payment.dart';
@@ -22,8 +23,11 @@ class PaymentCompletePage extends ConsumerWidget {
         title: const Text('支払い完了'),
       ),
       body: ref.watch(paymentCompleteControllerProvider(payment)).when(
-            data: (data) => _ViewBody(payment, data.$1, data.$2),
-            error: (err, st) => _ViewBody(payment, -1, '$err'),
+            data: (data) => _ViewBody(payment, responseBody: data),
+            error: (err, st) {
+              final appException = err as AppException;
+              return _ViewBody(payment, appException: appException);
+            },
             loading: () => const Center(
               child: CircularProgressIndicator(),
             ),
@@ -33,14 +37,16 @@ class PaymentCompletePage extends ConsumerWidget {
 }
 
 class _ViewBody extends StatelessWidget {
-  const _ViewBody(this.payment, this.resultCode, this.message);
+  const _ViewBody(this.payment, {this.responseBody, this.appException});
 
   final Payment payment;
-  final int resultCode;
-  final String message;
+  final String? responseBody;
+  final AppException? appException;
 
   @override
   Widget build(BuildContext context) {
+    final resultCode = (appException == null) ? 200 : appException!.code;
+    final resultBody = (appException == null) ? responseBody! : appException.toString();
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -48,8 +54,8 @@ class _ViewBody extends StatelessWidget {
           _ViewPaymentInfo(payment),
           const Divider(),
           const SizedBox(height: 16),
-          _ViewResult(resultCode, message),
-          const Spacer(),
+          _ViewResult(resultCode, resultBody),
+          const SizedBox(height: 16),
           const _CloseButton(),
           const SizedBox(height: 16),
         ],
@@ -76,10 +82,10 @@ class _ViewPaymentInfo extends ConsumerWidget {
 }
 
 class _ViewResult extends StatelessWidget {
-  const _ViewResult(this.resultCode, this.message);
+  const _ViewResult(this.resultCode, this.body);
 
   final int resultCode;
-  final String message;
+  final String body;
 
   @override
   Widget build(BuildContext context) {
@@ -88,14 +94,27 @@ class _ViewResult extends StatelessWidget {
     final icons = isSuccess ? Icons.check_circle : Icons.error_rounded;
     final color = isSuccess ? Colors.green : Colors.red;
 
-    return Column(
-      children: [
-        Icon(icons, color: color, size: 50),
-        const SizedBox(height: 8),
-        Text('HTTP Status Code: $resultCode', style: TextStyle(color: color, fontSize: 20)),
-        const SizedBox(height: 16),
-        Text(message, style: TextStyle(color: color)),
-      ],
+    return Flexible(
+      child: Column(
+        children: [
+          Icon(icons, color: color, size: 50),
+          const SizedBox(height: 8),
+          Text('HTTP Status Code: $resultCode', style: TextStyle(color: color, fontSize: 20)),
+          const SizedBox(height: 16),
+          Flexible(
+              child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+              child: SingleChildScrollView(
+                child: Text(body),
+              ),
+            ),
+          )),
+        ],
+      ),
     );
   }
 }

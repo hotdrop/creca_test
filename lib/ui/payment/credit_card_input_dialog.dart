@@ -46,7 +46,7 @@ class _CustomAlertDialogState extends State<_CustomAlertDialog> {
               cardNumber: widget.creditCard.cardNumber,
               expiryDate: widget.creditCard.expiryDate,
               cardHolderName: widget.creditCard.cardHolderName,
-              cvvCode: widget.creditCard.cvvCode,
+              cvvCode: widget.creditCard.getCvvCode(),
               onCreditCardModelChange: widget.onChange,
               themeColor: Colors.lightBlue,
               cardNumberDecoration: const InputDecoration(

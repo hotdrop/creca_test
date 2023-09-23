@@ -51,13 +51,15 @@ class _ViewError extends StatelessWidget {
   }
 }
 
-class _ViewBody extends StatelessWidget {
+class _ViewBody extends ConsumerWidget {
   const _ViewBody(this.amount);
 
   final int amount;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isRegistered = ref.watch(paymentIsRegisteredCreditCardProvider);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -65,9 +67,12 @@ class _ViewBody extends StatelessWidget {
           _ViewPaymentInfo(amount),
           const Divider(),
           const _ViewCreditCard(),
-          const _ViewCreditCardInput(),
-          const Divider(),
-          const _InputCardInfoSaveSwitch(),
+          if (isRegistered) const Text('クレジットカード登録済', style: TextStyle(color: Colors.blue)),
+          if (!isRegistered) const _ViewCreditCardInput(),
+          if (!isRegistered) const Divider(),
+          if (!isRegistered) const _InputCardInfoSaveSwitch(),
+          if (isRegistered) const _DeleteButton(),
+          if (isRegistered) const Spacer(),
           _PaymentButton(amount),
         ],
       ),
@@ -99,23 +104,17 @@ class _ViewCreditCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cardInfo = ref.watch(paymentInputCreditCardProvider);
-    final isRegistered = ref.watch(paymentIsRegisteredCreditCardProvider);
-
-    return Column(
-      children: [
-        CreditCardWidget(
-          cardNumber: cardInfo.cardNumber,
-          expiryDate: cardInfo.expiryDate,
-          cardHolderName: cardInfo.cardHolderName,
-          cvvCode: cardInfo.cvvCode,
-          showBackView: false,
-          isHolderNameVisible: true,
-          labelValidThru: '有効\n期限',
-          labelCardHolder: 'NAME',
-          onCreditCardWidgetChange: (creditCardBrand) {},
-        ),
-        if (isRegistered) const Text('クレカ情報登録済', style: TextStyle(color: Colors.blue)),
-      ],
+    return CreditCardWidget(
+      cardNumber: cardInfo.getShowCardNumeberForWidget(),
+      expiryDate: cardInfo.expiryDate,
+      cardHolderName: cardInfo.cardHolderName,
+      cvvCode: cardInfo.getCvvCode(),
+      showBackView: false,
+      isHolderNameVisible: true,
+      obscureInitialCardNumber: true,
+      labelValidThru: '有効\n期限',
+      labelCardHolder: 'NAME',
+      onCreditCardWidgetChange: (creditCardBrand) {},
     );
   }
 }
@@ -218,6 +217,40 @@ class _InputCardInfoSaveSwitch extends ConsumerWidget {
   }
 }
 
+class _DeleteButton extends ConsumerWidget {
+  const _DeleteButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: ElevatedButton(
+        onPressed: () => _showConfirmDialog(context, ref),
+        child: const Padding(
+          padding: EdgeInsets.all(16),
+          child: Text('登録カード情報を削除する'),
+        ),
+      ),
+    );
+  }
+
+  void _showConfirmDialog(BuildContext context, WidgetRef ref) {
+    AppDialog.okAndCancel(
+      message: '登録されているカード情報を削除します。よろしいですか？',
+      onOk: () {
+        ref.read(paymentControllerProvider.notifier).deleteCard().then((_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('カード情報を削除しました'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        });
+      },
+    );
+  }
+}
+
 class _PaymentButton extends ConsumerWidget {
   const _PaymentButton(this.amount);
 
@@ -247,7 +280,6 @@ class _PaymentButton extends ConsumerWidget {
           creditCard: ref.read(paymentInputCreditCardProvider),
           transactionId: ref.read(paymentTransactionIdProvider),
           amount: amount,
-          registeredCreditCard: ref.read(paymentIsRegisteredCreditCardProvider),
           isSaveCardInfo: ref.read(paymentIsSaveCreditCardProvider),
         );
         PaymentCompletePage.start(context, payment).then((value) => Navigator.pop(context));
