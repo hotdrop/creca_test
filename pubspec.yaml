@@ -20,9 +20,14 @@ dependencies:
   # ui
   flutter_credit_card: ^3.0.7
 
+  # network
+  http: ^1.1.0
+  freezed_annotation: ^2.4.1
+
   # storage
   isar: ^3.1.0+1
   isar_flutter_libs: ^3.1.0+1
+  shared_preferences: ^2.2.1
   
   # other
   uuid: ^3.0.7
@@ -35,9 +40,12 @@ dev_dependencies:
     sdk: flutter
 
   riverpod_generator: ^2.3.1
+  isar_generator: ^3.1.0+1
+  freezed: ^2.4.1
+  json_serializable: ^6.7.1
+
   flutter_lints: ^2.0.0
   build_runner: ^2.4.6
-  isar_generator: ^3.1.0+1
 
 flutter:
   uses-material-design: true

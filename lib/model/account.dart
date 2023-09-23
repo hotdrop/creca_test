@@ -6,7 +6,7 @@ final accountProvider = NotifierProvider<AccountNotifier, Account>(AccountNotifi
 class AccountNotifier extends Notifier<Account> {
   @override
   Account build() {
-    return ref.read(accountRepositoryProvider).findAll().first;
+    return ref.read(accountRepositoryProvider).findAccounts().first;
   }
 
   void changeAccunt(Account selectAccount) {

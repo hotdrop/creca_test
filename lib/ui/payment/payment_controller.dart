@@ -1,8 +1,9 @@
+import 'package:creca_test/model/unique_id_generator.dart';
+import 'package:creca_test/repository/account_repository.dart';
 import 'package:flutter_credit_card/credit_card_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:creca_test/model/credit_card.dart';
-import 'package:creca_test/repository/payment_repository.dart';
 
 part 'payment_controller.g.dart';
 
@@ -10,8 +11,8 @@ part 'payment_controller.g.dart';
 class PaymentController extends _$PaymentController {
   @override
   Future<void> build() async {
-    final registeredCreditCard = await ref.read(paymentRepositoryProvider).findCreditCard();
-    final transactionId = ref.read(paymentRepositoryProvider).generateTransactionId();
+    final registeredCreditCard = await ref.read(accountRepositoryProvider).findCreditCard();
+    final transactionId = ref.read(uniqueIdGeneratorProvider).generate();
     ref.read(_uiStateProvider.notifier).state = _UiState.create(transactionId, registeredCreditCard);
   }
 

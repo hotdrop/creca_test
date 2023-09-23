@@ -10,7 +10,7 @@ class HomeController extends _$HomeController {
   void build() {}
 
   List<Account> findAccounts() {
-    return ref.read(accountRepositoryProvider).findAll();
+    return ref.read(accountRepositoryProvider).findAccounts();
   }
 
   void changeAccount(Account account) {

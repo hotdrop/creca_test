@@ -1,6 +1,5 @@
 import 'package:creca_test/common/logger.dart';
 import 'package:creca_test/model/account.dart';
-import 'package:creca_test/model/credit_card.dart';
 import 'package:creca_test/model/history.dart';
 import 'package:creca_test/model/payment.dart';
 import 'package:creca_test/model/unique_id_generator.dart';
@@ -13,26 +12,6 @@ class PaymentRepository {
   PaymentRepository(this.ref);
 
   final Ref ref;
-
-  Future<CreditCard?> findCreditCard() async {
-    // TODO カード情報が登録されているか取得する
-    await Future<void>.delayed(const Duration(milliseconds: 500));
-
-    final account = ref.read(accountProvider);
-    if (account.id == '1000ab02') {
-      return const CreditCard(
-        cardNumber: '1111 2222 3333 4444',
-        expiryDate: '12/25',
-        cardHolderName: 'TEST TAROU',
-        cvvCode: '123',
-      );
-    }
-    return null;
-  }
-
-  String generateTransactionId() {
-    return ref.read(uniqueIdGeneratorProvider).generate();
-  }
 
   Future<List<History>> findHistories() async {
     return await ref.read(historyDaoProvider).findAll();
